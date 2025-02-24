@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="ISO-8859-1" />
+	<title></title>
+	<link rel="stylesheet" href="./resources/style.css">
+	<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+	<script src="./resources/script.js"></script>
+</head>
+
+<body>
+
+	<div id="main-container">
+		<div id="button-container">
+			<h2 id="plugin-heading" style="color:#005F87;font-weight: bolder;">Velocity Context Manager</h2>
+			<button id="upload-config-btn" onclick="triggerFileInput()">Upload New Configuration</button>
+            <input type="file" id="file-input" style="display: none;" accept=".json" onchange="handleFileUpload(event)" />
+		</div>
+
+		<div id="polarion-json-file-container">
+			<table id="table-container">
+				<thead>
+					<tr>
+						<th style="background-color:#F0F0F0">Configuration</th>
+						<th style="background-color:#F0F0F0">Action</th>
+					</tr>
+				</thead>
+				<tbody id="json-file-body">
+				</tbody>
+			</table>
+		</div>
+
+	</div>
+</body>
+
+</html>
