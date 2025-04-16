@@ -6,12 +6,11 @@ $(document).ready(function() {
 		success: function(response) {
 			if (response) {
 				const jsonFilesMapObj = response.jsonFilesMapObj;
-				
 				Object.keys(jsonFilesMapObj).forEach(function(key) {
 					var jsonFileName = jsonFilesMapObj[key].jsonFileName;
 					var row = '<tr class="polarion-rpw-table-content-row">';
-					row += '<td>' + jsonFileName + '</td>';
-					row += '<td><button id="edit-json-file-btn">Edit</button></td>';
+					row += '<td style="width:50%">' + jsonFileName + '</td>';
+					row += '<td style="width:50%;"><button id="edit-json-file-btn">Edit</button></td>';
                     row += '</tr>';
 					$('#json-file-body').append(row);
 				});
