@@ -12,17 +12,12 @@
 <body>
 
 	<div id="main-container">
-		<div id="button-container">
-			<h2 id="plugin-heading" style="color:#005F87;font-weight: bolder;">Velocity Context Manager</h2>
-			<button id="upload-config-btn" onclick="triggerFileInput()">Upload New Configuration</button>
-            <input type="file" id="file-input" style="display: none;" accept=".json" onchange="handleFileUpload(event)" />
-		</div>
-
 		<div id="polarion-json-file-container">
 			<table id="table-container">
 				<thead>
 					<tr>
-						<th style="background-color:#F0F0F0">Configuration</th>
+						<th style="background-color:#F0F0F0">Risk Documents</th>
+						<th style="background-color:#F0F0F0">Attachments</th>
 						<th style="background-color:#F0F0F0">Action</th>
 					</tr>
 				</thead>
@@ -30,7 +25,15 @@
 				</tbody>
 			</table>
 		</div>
-
+	</div>
+	<!-- Hidden Editor Section -->
+	<div id="json-editor" style="display:none; margin-top: 20px;">
+		<h3>Edit JSON File</h3>
+		<p><strong>Module:</strong> <span id="editor-module-name"></span></p>
+		<p><strong>File Name:</strong> <span id="editor-file-name"></span></p>
+		<textarea id="json-textarea" rows="10" cols="80"></textarea><br>
+		<button id="save-json-btn" onclick="saveJsonFile()">Save</button>
+		<button id="close-json-btn" onclick="closeJsonFile()">Close</button>
 	</div>
 </body>
 

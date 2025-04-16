@@ -30,8 +30,8 @@ public class JNJVelocityContextServlet extends HttpServlet{
 		try {
 			if (action != null) {
 				switch (action) {
-				case "getPolarionJSONResources":
-					jnjVelocityContextService.getPolarionJSONFiles(req, resp);
+				case "getLiveDocAttachedWithJson":
+					jnjVelocityContextService.getLiveDocAttachedWithJsonFile(req, resp);
 					break;
 				default:
 					throw new IllegalArgumentException("Invalid action specified");
@@ -53,8 +53,8 @@ public class JNJVelocityContextServlet extends HttpServlet{
 		try {
 		if (action != null) {
 			switch (action) {
-			case "uploadJSONFile":
-				jnjVelocityContextService.uploadJSONFile(req, resp);
+			case "updateLiveDocAttachment":
+				jnjVelocityContextService.updateLiveDocAttachment(req, resp);
 				break;
 			default:
 				throw new IllegalArgumentException("Invalid action specified");

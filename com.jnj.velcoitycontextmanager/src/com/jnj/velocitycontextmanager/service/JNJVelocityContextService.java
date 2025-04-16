@@ -5,7 +5,9 @@ import javax.servlet.http.HttpServletResponse;
 
 public interface JNJVelocityContextService {
 	
-	public void getPolarionJSONFiles(HttpServletRequest req, HttpServletResponse resp) throws Exception;
+	public void getLiveDocAttachedWithJsonFile (HttpServletRequest req, HttpServletResponse resp) throws Exception;
 	
-	public void uploadJSONFile(HttpServletRequest req, HttpServletResponse resp) throws Exception;
+	public void updateLiveDocAttachment (HttpServletRequest req, HttpServletResponse resp) throws Exception;
+	
+	
 }
