@@ -17,9 +17,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.jnj.velocitycontextmanager.model.LiveDocAttachmentInfo;
 import com.jnj.velocitycontextmanager.service.JNJVelocityContextService;
 import com.polarion.alm.projects.model.IFolder;
@@ -52,62 +49,55 @@ public class JNJVelocityContextImpl implements JNJVelocityContextService {
 				docAttachmentInfoList.clear();
 			}
 
+			IPrototype modulePrototype = trackerService.getDataService().getPrototype("Module");
+			Map<Integer, IModule> documentList = new HashMap<>();
+			int itrCount = 0;
+
+			// Collect all modules from all folders
 			for (IFolder folder : folderList) {
-				IPrototype modulePrototype = trackerService.getDataService().getPrototype("Module");
 				IPObjectList pObjectList = trackerService.getDataService().searchInstances(modulePrototype, projectId,
 						folder.getName());
 
 				for (Object obj : pObjectList) {
 					if (obj instanceof IModule) {
 						IModule module = (IModule) obj;
-						// System.out.println("Checking Module: " + module.getModuleName());
+						documentList.put(itrCount, module);
+						itrCount++;
+					}
+				}
+			}
 
-						try {
-							IPObjectList<IModuleAttachment> moduleAttachments = module.getAttachments();
-							boolean hasJson = false;
-							for (IModuleAttachment attachment : moduleAttachments) {
-								String attachmentFileName = attachment.getFileName();
+			// Process each module and its attachments
+			for (Map.Entry<Integer, IModule> entry : documentList.entrySet()) {
+				IModule module = entry.getValue();
+				IPObjectList<IModuleAttachment> moduleAttachments = module.getAttachments();
 
-								if (attachmentFileName != null && attachmentFileName.toLowerCase().endsWith(".json")) {
-									hasJson = true;
+				for (IModuleAttachment attachment : moduleAttachments) {
+					String attachmentFileName = attachment.getFileName();
 
-									// System.out.println("---- Found JSON Attachment -----");
-									// System.out.println("Module: " + module.getModuleName() + " | Attachment File:
-									// "
-									// + attachmentFileName);
+					if (attachmentFileName != null && attachmentFileName.toLowerCase().endsWith(".json")) {
+						try (InputStream inputStream = attachment.getDataStream()) {
+							String content = new BufferedReader(new InputStreamReader(inputStream)).lines()
+									.collect(Collectors.joining("\n"));
 
-									// Read the content from InputStream
-									try (InputStream inputStream = attachment.getDataStream()) {
-										String content = new BufferedReader(new InputStreamReader(inputStream)).lines()
-												.collect(Collectors.joining("\n"));
-										// System.out.println("JSON Content:\n" + content);
+							LiveDocAttachmentInfo docAttachmentObj = new LiveDocAttachmentInfo();
+							docAttachmentObj.setContent(content);
+							docAttachmentObj.setFileName(attachmentFileName);
+							docAttachmentObj.setModuleName(module.getModuleName());
 
-										LiveDocAttachmentInfo docAttachmentObj = new LiveDocAttachmentInfo();
-										docAttachmentObj.setContent(content);
-										docAttachmentObj.setFileName(attachmentFileName);
-										docAttachmentObj.setModuleName(module.getModuleName());
-										docAttachmentInfoList.add(docAttachmentObj);
+							docAttachmentInfoList.add(docAttachmentObj);
 
-									} catch (Exception ex) {
-										System.out.println(
-												"Error reading InputStream for attachment: " + ex.getMessage());
-									}
-								}
-							}
-							if (!hasJson) {
-								// System.out.println("No JSON attachments found for module: " +
-								// module.getModuleName());
-							}
-
-						} catch (Exception e) {
-							System.out.println(
-									"Error processing module '" + module.getModuleName() + "': " + e.getMessage());
+						} catch (Exception ex) {
+							System.out.println("Error reading InputStream for attachment: " + ex.getMessage());
 						}
 					}
 				}
 			}
+
+			// Prepare response
 			Map<String, Object> responseObject = new LinkedHashMap<>();
 			responseObject.put("liveDocAttachmentInfo", docAttachmentInfoList);
+
 			String jsonResponse = objectMapper.writeValueAsString(responseObject);
 
 			resp.setContentType("application/json");
@@ -117,6 +107,7 @@ public class JNJVelocityContextImpl implements JNJVelocityContextService {
 			log.error("Error reading JSON: " + e.getMessage());
 			e.printStackTrace();
 		}
+
 	}
 
 	@Override
@@ -162,7 +153,7 @@ public class JNJVelocityContextImpl implements JNJVelocityContextService {
 
 			}
 		}
-		System.out.println("DocumentList : " + documentList);
+	//	System.out.println("DocumentList : " + documentList);
 		for (Map.Entry<Integer, IModule> entry : documentList.entrySet()) {
 			IModule module = entry.getValue();
 
@@ -170,6 +161,7 @@ public class JNJVelocityContextImpl implements JNJVelocityContextService {
 				// Found the matching module
 				System.out.println("Matching module found: " + module.getModuleName());
 
+				   
 				// Delete the old attachment if exists
 				if (module.getAttachment(fileName) != null) {
 					module.deleteAttachment(module.getAttachment(fileName));
@@ -178,7 +170,8 @@ public class JNJVelocityContextImpl implements JNJVelocityContextService {
 
 				// Create the new attachment with updated content
 				try (InputStream contentStream = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8))) {
-					module.createAttachment(fileName, "application/json", contentStream);
+					IModuleAttachment createAttachment = module.createAttachment(fileName, null, contentStream);
+					createAttachment.save();
 					
 					try {
 						module.save();
