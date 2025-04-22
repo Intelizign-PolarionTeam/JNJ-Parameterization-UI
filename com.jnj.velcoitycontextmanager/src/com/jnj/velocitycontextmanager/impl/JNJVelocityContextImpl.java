@@ -7,9 +7,11 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -45,15 +47,11 @@ public class JNJVelocityContextImpl implements JNJVelocityContextService {
 			String projectId = "Innomedic";
 			List<IFolder> folderList = trackerService.getFolderManager().getFolders(projectId);
 
-			if (!docAttachmentInfoList.isEmpty()) {
-				docAttachmentInfoList.clear();
-			}
+			// Flat list to store unique LiveDocAttachmentInfo entries
+			List<LiveDocAttachmentInfo> docAttachmentInfoList = new ArrayList<>();
 
 			IPrototype modulePrototype = trackerService.getDataService().getPrototype("Module");
-			Map<Integer, IModule> documentList = new HashMap<>();
-			int itrCount = 0;
 
-			// Collect all modules from all folders
 			for (IFolder folder : folderList) {
 				IPObjectList pObjectList = trackerService.getDataService().searchInstances(modulePrototype, projectId,
 						folder.getName());
@@ -61,34 +59,33 @@ public class JNJVelocityContextImpl implements JNJVelocityContextService {
 				for (Object obj : pObjectList) {
 					if (obj instanceof IModule) {
 						IModule module = (IModule) obj;
-						documentList.put(itrCount, module);
-						itrCount++;
-					}
-				}
-			}
+						String moduleName = module.getModuleName();
 
-			// Process each module and its attachments
-			for (Map.Entry<Integer, IModule> entry : documentList.entrySet()) {
-				IModule module = entry.getValue();
-				IPObjectList<IModuleAttachment> moduleAttachments = module.getAttachments();
+						IPObjectList<IModuleAttachment> moduleAttachments = module.getAttachments();
 
-				for (IModuleAttachment attachment : moduleAttachments) {
-					String attachmentFileName = attachment.getFileName();
+						Set<String> addedFileNames = new HashSet<>(); 
 
-					if (attachmentFileName != null && attachmentFileName.toLowerCase().endsWith(".json")) {
-						try (InputStream inputStream = attachment.getDataStream()) {
-							String content = new BufferedReader(new InputStreamReader(inputStream)).lines()
-									.collect(Collectors.joining("\n"));
+						for (IModuleAttachment attachment : moduleAttachments) {
+							String attachmentFileName = attachment.getFileName();
 
-							LiveDocAttachmentInfo docAttachmentObj = new LiveDocAttachmentInfo();
-							docAttachmentObj.setContent(content);
-							docAttachmentObj.setFileName(attachmentFileName);
-							docAttachmentObj.setModuleName(module.getModuleName());
+							if (attachmentFileName != null && attachmentFileName.toLowerCase().endsWith(".json")
+									&& addedFileNames.add(attachmentFileName)) { 
+								try (InputStream inputStream = attachment.getDataStream()) {
+									String content = new BufferedReader(new InputStreamReader(inputStream)).lines()
+											.collect(Collectors.joining("\n"));
 
-							docAttachmentInfoList.add(docAttachmentObj);
+									LiveDocAttachmentInfo docAttachmentObj = new LiveDocAttachmentInfo();
+									docAttachmentObj.setContent(content);
+									docAttachmentObj.setFileName(attachmentFileName);
+									docAttachmentObj.setModuleName(moduleName);
 
-						} catch (Exception ex) {
-							System.out.println("Error reading InputStream for attachment: " + ex.getMessage());
+									docAttachmentInfoList.add(docAttachmentObj);
+
+								} catch (Exception ex) {
+									System.out.println("Error reading attachment '" + attachmentFileName
+											+ "' in module '" + moduleName + "': " + ex.getMessage());
+								}
+							}
 						}
 					}
 				}
@@ -104,7 +101,7 @@ public class JNJVelocityContextImpl implements JNJVelocityContextService {
 			resp.getWriter().write(jsonResponse);
 
 		} catch (Exception e) {
-			log.error("Error reading JSON: " + e.getMessage());
+			log.error("Error reading JSON: " + e.getMessage(), e);
 			e.printStackTrace();
 		}
 
@@ -153,7 +150,7 @@ public class JNJVelocityContextImpl implements JNJVelocityContextService {
 
 			}
 		}
-	//	System.out.println("DocumentList : " + documentList);
+		// System.out.println("DocumentList : " + documentList);
 		for (Map.Entry<Integer, IModule> entry : documentList.entrySet()) {
 			IModule module = entry.getValue();
 
@@ -161,7 +158,6 @@ public class JNJVelocityContextImpl implements JNJVelocityContextService {
 				// Found the matching module
 				System.out.println("Matching module found: " + module.getModuleName());
 
-				   
 				// Delete the old attachment if exists
 				if (module.getAttachment(fileName) != null) {
 					module.deleteAttachment(module.getAttachment(fileName));
@@ -172,7 +168,7 @@ public class JNJVelocityContextImpl implements JNJVelocityContextService {
 				try (InputStream contentStream = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8))) {
 					IModuleAttachment createAttachment = module.createAttachment(fileName, null, contentStream);
 					createAttachment.save();
-					
+
 					try {
 						module.save();
 						transactionservice.endTx(false);
