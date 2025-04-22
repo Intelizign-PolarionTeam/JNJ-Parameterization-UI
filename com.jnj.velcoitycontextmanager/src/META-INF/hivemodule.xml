@@ -2,7 +2,7 @@
 <module id="com.jnj.velocitycontextmanager" version="1.0.0">
 
 	<contribution configuration-id="com.polarion.xray.webui.administrationPageExtenders">
-		<extender name="Velocity Context Manager"
+		<extender name="Parameter Manager"
 				  pageUrl="/polarion/velocity-context-manager/velocitycontextmanager" 
 				  projectScope="false"
 				  projectGroupScope="false"

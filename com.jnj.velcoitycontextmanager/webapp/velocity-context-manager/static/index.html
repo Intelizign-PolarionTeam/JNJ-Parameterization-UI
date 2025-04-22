@@ -2,38 +2,67 @@
 <html lang="en">
 
 <head>
-	<meta charset="ISO-8859-1" />
-	<title></title>
+	<meta charset="UTF-8">
+	<title>Parameter Manager</title>
 	<link rel="stylesheet" href="./resources/style.css">
 	<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 	<script src="./resources/script.js"></script>
 </head>
 
 <body>
+	<div class="parameter-div-class" id="parameter-div">
+		<div class="title-info">
+			<h2>Parameter Manager</h2>
+		</div>
+		<div class="card-box">
+			<div class="form-group">
+				<label for="parameterSelect">Select Parameter File :</label>
+				<select id="parameterSelect">
+					<option value="">--Select--</option>
+					<option value="param1">riskParameters.json</option>
+					<option value="param2">risksheet.json</option>
+					<option value="param3">riskSheetTopPanel.vm</option>
+				</select>
+			</div>
 
-	<div id="main-container">
-		<div id="polarion-json-file-container">
-			<table id="table-container">
+			<div class="form-group">
+				<label for="projectSelect">Select Project ID :</label>
+				<select id="projectSelect">
+					<option value="">--Select--</option>
+					<option value="Innomedic">Innomedic</option>
+					<option value="ProjectX">Project X</option>
+					<option value="Demo123">Demo 123</option>
+				</select>
+			</div>
+
+			<div class="form-group">
+				<button id="apply-btn" onclick="handleApply()">Apply</button>
+			</div>
+		</div>
+		<div id="resultsTable" style="margin-top: 20px; display: none;">
+			<table border="1" cellpadding="8" cellspacing="0" width="100%">
 				<thead>
 					<tr>
-						<th style="background-color:#F0F0F0">Risk Documents</th>
-						<th style="background-color:#F0F0F0">Attachments</th>
-						<th style="background-color:#F0F0F0">Action</th>
+						<th>Module Name</th>
+						<th>Module Type</th>
+						<th>File Name</th>
+						<th>Actions</th>
 					</tr>
 				</thead>
-				<tbody id="json-file-body">
+				<tbody id="resultsBody">
+					<!-- Rows will be inserted dynamically -->
 				</tbody>
 			</table>
 		</div>
 	</div>
-	<!-- Hidden Editor Section -->
-	<div id="json-editor" style="display:none; margin-top: 20px;">
-		<h3>Edit JSON File</h3>
-		<p><strong>Module:</strong> <span id="editor-module-name"></span></p>
-		<p><strong>File Name:</strong> <span id="editor-file-name"></span></p>
-		<textarea id="json-textarea" rows="10" cols="80"></textarea><br>
-		<button id="save-json-btn" onclick="saveJsonFile()">Save</button>
-		<button id="close-json-btn" onclick="closeJsonFile()">Close</button>
+	<div id="editor"
+			style="display: none; margin-top: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 8px; width:70%;">
+			<h3>Json Editor </h3>
+			<textarea id="editContent" rows="25" style="width:100%;"></textarea>
+			<div style="margin-top: 10px;">
+				<button onclick="saveEditedContent()" style="width:10%">Update</button>
+				<button onclick="cancelEdit()" style="width:10%">Cancel</button>
+			</div>
 	</div>
 </body>
 
